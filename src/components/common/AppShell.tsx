@@ -4,6 +4,8 @@ import { useUiStore } from '../../store/uiStore';
 import { SearchModal } from './SearchModal';
 import { NotificationsDrawer } from './NotificationsDrawer';
 import { ReportGenerationModal } from '../../features/reports/ReportGenerationModal';
+import { RaiseComplaintModal } from './RaiseComplaintModal';
+import { useComplaintStore } from '../../store/complaintStore';
 
 export const AppShell: React.FC = () => {
   const [isRailCollapsed, setIsRailCollapsed] = useState(false);
@@ -13,6 +15,7 @@ export const AppShell: React.FC = () => {
     setIsNotificationsOpen, 
     notifications,
   } = useUiStore();
+  const { setIsRaiseComplaintOpen } = useComplaintStore();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -34,10 +37,11 @@ export const AppShell: React.FC = () => {
 
   return (
     <div className="bg-background font-body-md text-on-surface min-h-screen flex flex-col">
-      {/* Search Modal, Notifications Drawer, and Report Modal */}
+      {/* Search Modal, Notifications Drawer, Report Modal, and Raise Complaint Modal */}
       <SearchModal />
       <NotificationsDrawer />
       <ReportGenerationModal />
+      <RaiseComplaintModal />
 
       {/* Left Navigation Rail (Stitch exact layout) */}
       <aside 
@@ -159,6 +163,17 @@ export const AppShell: React.FC = () => {
               <span className="material-symbols-outlined text-[18px]">description</span>
               {!isRailCollapsed && <span>Reports</span>}
             </NavLink>
+
+            {/* Raise Complaint Action */}
+            <button
+              type="button"
+              onClick={() => setIsRaiseComplaintOpen(true)}
+              className="flex items-center gap-space-sm px-space-sm py-2 rounded transition-colors font-body-sm text-body-sm text-primary hover:bg-surface-container font-medium w-full text-left cursor-pointer mt-1"
+              title={isRailCollapsed ? 'Raise Complaint' : undefined}
+            >
+              <span className="material-symbols-outlined text-[18px] text-primary">campaign</span>
+              {!isRailCollapsed && <span>Raise Complaint</span>}
+            </button>
           </nav>
 
           {/* Section: System */}
@@ -286,16 +301,27 @@ export const AppShell: React.FC = () => {
           </div>
 
           {/* Right Status & Profile Cluster */}
-          <div className="flex items-center gap-space-md">
+          <div className="flex items-center gap-space-sm sm:gap-space-md">
+            {/* Raise Civic Area Complaint Button */}
+            <button
+              type="button"
+              onClick={() => setIsRaiseComplaintOpen(true)}
+              className="h-8.5 px-3 rounded bg-primary text-on-primary font-title-sm text-title-sm hover:bg-primary-container shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+              title="Report an incident or raise an area complaint to Municipal Command"
+            >
+              <span className="material-symbols-outlined text-[17px]">campaign</span>
+              <span className="hidden sm:inline font-semibold">Raise Complaint</span>
+            </button>
+
             {/* Live Indicator */}
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-surface border border-outline-variant">
+            <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded bg-surface border border-outline-variant">
               <span className="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span>
               <span className="font-label-mono-sm text-label-mono-sm text-on-surface-variant">
                 Live • 14s ago
               </span>
             </div>
 
-            <div className="h-4 w-px bg-outline-variant"></div>
+            <div className="h-4 w-px bg-outline-variant hidden sm:block"></div>
 
             {/* Notification Bell */}
             <button

@@ -1,12 +1,32 @@
 import assert from 'node:assert';
 import test from 'node:test';
-import { runCausalIntelligenceAnalysis } from '../services/reportCausalEngine.js';
-import { generateReportPdf } from '../services/reportPdfGenerator.js';
-import { INITIAL_INCIDENTS } from '../services/mockData.js';
-import { ReportConfig, GeneratedReport, REPORT_SECTIONS_CATALOG } from '../types/reports.js';
+import { runCausalIntelligenceAnalysis } from '../services/reportCausalEngine';
+import { generateReportPdf } from '../services/reportPdfGenerator';
+import { INITIAL_INCIDENTS } from '../services/mockData';
+import { ReportConfig, GeneratedReport, REPORT_SECTIONS_CATALOG } from '../types/reports';
 
+/**
+ * TEST 1: Causal Intelligence Engine - Confirmed Multi-Source Incident
+ * 
+ * PURPOSE:
+ * Verifies that the automated causal evaluation engine correctly analyzes
+ * real multi-sensor incidents (e.g., rainfall radar + SCADA pump failure + water depth)
+ * without assuming causation prematurely.
+ * 
+ * INPUTS:
+ * - incident: Canonical incident object containing real telemetry, observations,
+ *             competing hypotheses, and audit history.
+ * - config: Report configuration defining requested sections, audience, and scope.
+ * 
+ * OUTPUT:
+ * - analysis: Structured CausalAnalysisResult containing classification,
+ *             confidence assessment, temporal lag sequencing, and action plans.
+ */
 test('1. Causal Intelligence Engine - Confirmed Multi-Source Incident', () => {
+  // Step 1: Select a high-severity incident with corroborated sensor data
   const incident = INITIAL_INCIDENTS[0]; // INC-2026-8841 (Critical waterlogging + SCADA pump trip)
+  
+  // Step 2: Define report generation parameters
   const config: ReportConfig = {
     reportType: 'root_cause_analysis',
     incidentId: incident.id,
@@ -14,26 +34,53 @@ test('1. Causal Intelligence Engine - Confirmed Multi-Source Incident', () => {
     organizationName: 'Metropolitan Authority',
     departmentName: 'Civil Defense',
     audience: 'operations_command',
-    reportingPeriod: 'Shift 1',
+    reportingPeriod: 'Operational Shift 1',
     confidentialityMarking: 'CONFIDENTIAL',
     selectedSections: ['cover_page', 'root_cause_analysis', 'recommendations'],
     format: 'pdf',
   };
 
+  // Step 3: Run the causal intelligence synthesis
   const analysis = runCausalIntelligenceAnalysis(incident, config);
 
-  assert.strictEqual(analysis.classification, 'confirmed');
-  assert.ok(analysis.confidenceScore >= 0.85, 'Confidence score should be >= 0.85');
-  assert.ok(analysis.competingHypotheses.length >= 2, 'Should have multiple candidate hypotheses');
+  // Step 4: Validate causal assertions
+  // 4a. Classification should be 'confirmed' because both ultrasonic sensor (>48cm)
+  //     and SCADA pump failure telemetry corroborate the physical event.
+  assert.strictEqual(
+    analysis.classification, 
+    'confirmed',
+    `Expected 'confirmed' classification but got '${analysis.classification}'`
+  );
+
+  // 4b. Calibrated confidence must be high (>= 85%) due to multi-source consensus.
+  assert.ok(
+    analysis.confidenceScore >= 0.85, 
+    `Confidence score should be >= 0.85, got ${analysis.confidenceScore}`
+  );
+
+  // 4c. Must evaluate alternative competing explanations (e.g., pipe rupture, pure catchment overload).
+  assert.ok(
+    analysis.competingHypotheses.length >= 2, 
+    `Should have at least 2 competing hypotheses, found ${analysis.competingHypotheses.length}`
+  );
+
+  // 4d. Conclusions must formulate a mechanistic explanation, not just a vague correlation.
   assert.ok(
     analysis.causalConclusions.some((c) => c.includes('Primary Mechanistic Explanation')),
-    'Should contain primary mechanistic explanation'
+    'Causal conclusions must state the primary mechanistic explanation'
   );
+
+  // 4e. Temporal sequence must detect ingestion lag (e.g. SCADA 4-minute delay).
   assert.ok(
     analysis.temporalSequence.some((t) => t.lagMinutes > 0),
-    'Should detect telemetry latency lag'
+    'Engine must detect telemetry latency between physical occurrence and system ingest'
   );
-  assert.ok(analysis.actionPlan.length > 0, 'Should have prioritized recommendations');
+
+  // 4f. Must provide an actionable, prioritized mitigation plan.
+  assert.ok(
+    analysis.actionPlan.length > 0, 
+    'Engine must produce prioritized recommendations linked to findings'
+  );
 });
 
 test('2. Causal Intelligence Engine - Sparse / Incomplete Evidence', () => {

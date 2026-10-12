@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RealisticGeoMap } from './RealisticGeoMap';
 import { useIncidentStore } from '../../store/incidentStore';
+import { useComplaintStore } from '../../store/complaintStore';
 
 interface MapIncidentItem {
   id: string;
@@ -110,6 +111,7 @@ const INCIDENT_KEYS = ['INC-2048', 'INC-2051', 'INC-2054', 'INC-2057'];
 export const MapPage: React.FC = () => {
   const navigate = useNavigate();
   const { selectedIncidentId, setSelectedIncidentId } = useIncidentStore();
+  const { setIsRaiseComplaintOpen, setSelectedAreaPreset } = useComplaintStore();
 
   const [activeSevFilter, setActiveSevFilter] = useState<'All' | 'High/Crit' | 'Mod' | 'Low'>('All');
   const [activeTypeFilter, setActiveTypeFilter] = useState<'All' | 'Flooding' | 'Traffic' | 'Sensors'>('All');
@@ -303,6 +305,18 @@ export const MapPage: React.FC = () => {
               <span className="font-label-mono-sm text-label-mono-sm hidden md:inline">Sector 4 Focus</span>
             </button>
           </div>
+
+          <button
+            onClick={() => {
+              setSelectedAreaPreset(activeIncident.location);
+              setIsRaiseComplaintOpen(true);
+            }}
+            className="px-3 h-8 rounded flex items-center gap-1.5 bg-primary text-on-primary hover:bg-primary-container transition-colors font-title-sm text-title-sm shadow-xs cursor-pointer"
+            title="Report incident or file a complaint for this map area"
+          >
+            <span className="material-symbols-outlined text-[16px]">campaign</span>
+            <span className="font-semibold hidden sm:inline">Report Area Issue</span>
+          </button>
         </div>
       </div>
 

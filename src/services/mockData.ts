@@ -640,6 +640,33 @@ export const INITIAL_METRICS: OperationalMetrics = {
 
 export const REPLAY_DEMO_FRAMES: ReplayFrame[] = [
   {
+    step_number: 0,
+    timestamp: '06:00:00 UTC',
+    label: 'Ambient Pre-Storm Baseline (T-120m)',
+    active_event: {
+      event_id: 'evt_baseline_000',
+      source_id: 'src_weather_radar_01',
+      source_record_id: 'AMBIENT-SCAN',
+      event_type: 'ambient_surveillance',
+      occurred_at: '2026-10-12T06:00:00Z',
+      observed_at: '2026-10-12T06:00:00Z',
+      ingested_at: '2026-10-12T06:00:15Z',
+      location: { latitude: 19.083, longitude: 72.880, address: 'Sector 4 Hydrological Basin' },
+      payload: { reflectivity: '12 dBZ', precipitation: '0.0 mm/h' },
+      quality: { is_valid: true, is_stale: false, flags: [] },
+      schema_version: '1.0',
+      origin: 'simulated_scenario'
+    },
+    fusion_decision: 'separated',
+    narrative: 'All municipal sensor channels operating within nominal baseline limits. No active hydrological disruption detected.',
+    incident_snapshot: {
+      status: 'detected',
+      severity: 'low',
+      confidence: 0.12,
+      metrics: { water_level_cm: 0.0, rainfall_rate_mm_h: 0.0, traffic_speed_kmh: 48.0, citizen_reports_count: 0 }
+    }
+  },
+  {
     step_number: 1,
     timestamp: '06:12:00 UTC',
     label: 'Doppler Radar Storm Cell Detected',
