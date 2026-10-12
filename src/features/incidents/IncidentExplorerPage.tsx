@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIncidentStore } from '../../store/incidentStore';
+import { useReportStore } from '../../store/reportStore';
 
 interface IncidentRecord {
   id: string;
@@ -29,6 +30,7 @@ interface IncidentRecord {
 export const IncidentExplorerPage: React.FC = () => {
   const navigate = useNavigate();
   const { setSelectedIncidentId } = useIncidentStore();
+  const { openReportModal } = useReportStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(['INC-2048']));
@@ -215,6 +217,15 @@ export const IncidentExplorerPage: React.FC = () => {
 
             {/* Filter Action Buttons */}
             <div className="flex items-center gap-space-xs">
+              <button
+                type="button"
+                onClick={() => openReportModal(undefined, 'multi_incident_operations')}
+                className="h-9 px-3 rounded bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-caption text-caption font-semibold flex items-center gap-1.5 transition-colors border border-outline-variant shadow-xs"
+                title="Generate and download operations report"
+              >
+                <span className="material-symbols-outlined text-[16px] text-primary">download</span>
+                <span>Download Report</span>
+              </button>
               <button 
                 type="button" 
                 onClick={() => setSeverityFilter(severityFilter ? null : 'High')}

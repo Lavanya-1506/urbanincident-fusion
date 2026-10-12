@@ -12,6 +12,7 @@ import { AnalyticsPage } from './features/analytics/AnalyticsPage';
 import { SourcesHealthPage } from './features/sources/SourcesHealthPage';
 import { AuditHistoryPage } from './features/audit/AuditHistoryPage';
 import { SettingsPage } from './features/settings/SettingsPage';
+import { ReportHistoryPage } from './features/reports/ReportHistoryPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,7 @@ export const App: React.FC = () => {
               <Route path="map" element={<MapPage />} />
               <Route path="incidents" element={<IncidentExplorerPage />} />
               <Route path="incidents/:id" element={<InvestigationWorkspacePage />} />
+              <Route path="reports" element={<ReportHistoryPage />} />
               <Route path="replay" element={<ReplayLabPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="sources" element={<SourcesHealthPage />} />

@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CityScene } from './CityScene';
-import { SCENARIO_TICKS } from './scenarioData';
-import { CameraViewMode } from './types';
+import { RealisticGeoMap } from './RealisticGeoMap';
 import { useIncidentStore } from '../../store/incidentStore';
-import { useUiStore } from '../../store/uiStore';
 
 interface MapIncidentItem {
   id: string;
@@ -113,12 +110,10 @@ const INCIDENT_KEYS = ['INC-2048', 'INC-2051', 'INC-2054', 'INC-2057'];
 export const MapPage: React.FC = () => {
   const navigate = useNavigate();
   const { selectedIncidentId, setSelectedIncidentId } = useIncidentStore();
-  const { mapMode, setMapMode } = useUiStore();
 
   const [activeSevFilter, setActiveSevFilter] = useState<'All' | 'High/Crit' | 'Mod' | 'Low'>('All');
   const [activeTypeFilter, setActiveTypeFilter] = useState<'All' | 'Flooding' | 'Traffic' | 'Sensors'>('All');
   const [selectedIncidentKey, setSelectedIncidentKey] = useState<string>('INC-2048');
-  const [cameraMode, setCameraMode] = useState<CameraViewMode>('overview');
   const [isQueueExpanded, setIsQueueExpanded] = useState<boolean>(false);
   const [operatorActionState, setOperatorActionState] = useState<string | null>(null);
 
@@ -300,7 +295,7 @@ export const MapPage: React.FC = () => {
               <span className="material-symbols-outlined text-[18px]">remove</span>
             </button>
             <button
-              onClick={() => setCameraMode('incident_focus')}
+              onClick={() => selectIncident('INC-2048')}
               className="px-2.5 h-8 rounded flex items-center gap-1 text-on-surface hover:bg-surface-container-lowest transition-colors font-body-sm text-body-sm"
               title="Recenter to Sector 4"
             >
@@ -308,185 +303,20 @@ export const MapPage: React.FC = () => {
               <span className="font-label-mono-sm text-label-mono-sm hidden md:inline">Sector 4 Focus</span>
             </button>
           </div>
-
-          <div className="h-6 w-px bg-surface-container-highest"></div>
-
-          {/* Seamless 2D/3D switcher */}
-          <button
-            onClick={() => setMapMode(mapMode === '3d' ? '2d' : '3d')}
-            className={`h-8 px-3 rounded font-caption text-caption flex items-center gap-1.5 shadow-sm transition-all ${
-              mapMode === '3d'
-                ? 'bg-secondary text-on-secondary'
-                : 'bg-primary text-on-primary hover:bg-primary-container'
-            }`}
-          >
-            <span className="material-symbols-outlined text-[16px] text-tertiary-fixed">
-              {mapMode === '3d' ? 'view_in_ar' : 'satellite_alt'}
-            </span>
-            <span>{mapMode === '3d' ? 'Digital Twin 3D' : 'Vector 2D'}</span>
-          </button>
         </div>
       </div>
 
       {/* Primary Workspace: Split Canvas Viewport (68%) & Synchronized Incident Drawer (32%) */}
       <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden relative">
-        {/* Left / Center Viewport: Cartographic Map Canvas (68%) */}
+        {/* Left / Center Viewport: Realistic Cartographic Map Canvas (68%) */}
         <div className="relative w-full lg:w-[68%] h-full bg-surface-container overflow-hidden select-none">
-          {mapMode === '3d' ? (
-            /* Integrated Three.js 3D Simulation Canvas */
-            <div className="w-full h-full relative">
-              <CityScene
-                currentTick={SCENARIO_TICKS[3]}
-                cameraMode={cameraMode}
-                selectedSensorId={null}
-                onSelectSensor={() => {}}
-                selectedIncidentId={selectedIncidentKey}
-                onSelectIncident={selectIncident}
-              />
-            </div>
-          ) : (
-            /* Vector Map Cartography Canvas (Subdued, Clean, High Signal-to-Noise) */
-            <div className="absolute inset-0 w-full h-full pointer-events-auto">
-              <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <pattern height="60" id="grid-pattern" patternUnits="userSpaceOnUse" width="60">
-                    <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#e1e3dd" strokeDasharray="3 3" strokeWidth="0.75" />
-                  </pattern>
-                  <linearGradient id="river-fill" x1="0%" x2="100%" y1="0%" y2="100%">
-                    <stop offset="0%" stopColor="#cde1ed" />
-                    <stop offset="100%" stopColor="#bdd4e3" />
-                  </linearGradient>
-                </defs>
-                <rect fill="#f2f4ee" height="100%" width="100%" />
-                <rect fill="url(#grid-pattern)" height="100%" opacity="0.8" width="100%" />
-
-                {/* District Parcels */}
-                <path d="M 80,40 L 420,30 L 400,240 L 120,280 Z" fill="#ebede6" opacity="0.6" />
-                <path d="M 440,20 L 760,20 L 820,320 L 420,290 Z" fill="#eaede5" opacity="0.8" />
-                <path d="M 840,40 L 1180,60 L 1140,360 L 850,330 Z" fill="#ebede6" opacity="0.7" />
-                <path d="M 60,340 L 390,320 L 410,640 L 40,680 Z" fill="#e8ebe3" opacity="0.5" />
-                <path d="M 430,340 L 890,350 L 920,740 L 410,760 Z" fill="#f5f7f1" opacity="0.9" />
-                <path d="M 940,390 L 1180,410 L 1160,780 L 930,760 Z" fill="#e6e9e1" opacity="0.7" />
-
-                {/* River Corridor */}
-                <path d="M -20,220 C 180,240 310,210 470,260 C 660,320 810,480 940,560 C 1040,620 1140,640 1220,640 L 1220,730 C 1110,730 1010,700 890,620 C 740,520 620,380 440,330 C 290,290 140,310 -20,300 Z" fill="url(#river-fill)" />
-                <path d="M 470,270 Q 560,180 620,0 L 648,0 Q 588,190 496,284 Z" fill="#cde1ed" />
-
-                {/* Arterial Road Grid */}
-                <path d="M -50,140 L 1250,210" stroke="#ffffff" strokeWidth="12" />
-                <path d="M -50,140 L 1250,210" stroke="#dadcd4" strokeWidth="8" />
-                <path d="M 520,-20 L 480,820" stroke="#ffffff" strokeWidth="14" />
-                <path d="M 520,-20 L 480,820" stroke="#dadcd4" strokeWidth="10" />
-                <path d="M 380,820 C 440,590 520,440 680,360 C 820,290 1040,240 1250,230" fill="none" stroke="#ffffff" strokeWidth="12" />
-                <path d="M 380,820 C 440,590 520,440 680,360 C 820,290 1040,240 1250,230" fill="none" stroke="#d5d8cf" strokeWidth="8" />
-                <path d="M 120,40 L 120,780 M 240,40 L 240,780 M 740,40 L 740,780 M 880,40 L 880,780 M 1020,40 L 1020,780" stroke="#e1e3dd" strokeWidth="3" />
-                <path d="M 0,90 L 1200,110 M 0,420 L 1200,440 M 0,560 L 1200,580 M 0,700 L 1200,720" stroke="#e1e3dd" strokeWidth="3" />
-
-                {/* District Labels */}
-                <text fill="#747874" fontFamily="JetBrains Mono" fontSize="11" letterSpacing="2" x="210" y="110">DISTRICT 1 • HARBOR COMMONS</text>
-                <text fill="#747874" fontFamily="JetBrains Mono" fontSize="11" letterSpacing="2" x="730" y="90">DISTRICT 2 • COMMERCIAL CORRIDOR</text>
-                <text fill="#5a605a" fontFamily="JetBrains Mono" fontSize="12" fontWeight="600" letterSpacing="2.5" x="490" y="470">SECTOR 4 • CENTRAL METROPOLITAN</text>
-                <text fill="#747874" fontFamily="JetBrains Mono" fontSize="11" letterSpacing="2" x="100" y="690">DISTRICT 3 • RESIDENTIAL LEVEE</text>
-              </svg>
-            </div>
-          )}
-
-          {/* Inundation Sensor Footprint Overlay */}
-          <div className="absolute left-[38%] top-[42%] w-56 h-40 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-            <div className="w-full h-full bg-secondary-container/25 rounded-full filter blur-xl animate-pulse"></div>
-          </div>
-
-          {/* Interactive Marker 1: INC-2048 (High Alert) */}
-          <div
-            onClick={() => selectIncident('INC-2048')}
-            className={`absolute left-[42%] top-[46%] -translate-x-1/2 -translate-y-1/2 z-20 cursor-pointer group transition-transform ${
-              selectedIncidentKey === 'INC-2048' ? 'scale-105' : ''
-            }`}
-          >
-            <span className="absolute -inset-4 rounded-full bg-error/20 animate-ping"></span>
-            <span className="absolute -inset-2 rounded-full bg-error/30 animate-pulse"></span>
-            <div className="relative flex flex-col items-center">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error text-on-error shadow-xl font-label-mono-sm text-label-mono-sm font-semibold tracking-tight transition-transform transform group-hover:scale-105">
-                <span className="w-2 h-2 rounded-full bg-on-error animate-pulse"></span>
-                <span>INC-2048</span>
-                <span className="text-[10px] bg-on-error/20 px-1 rounded uppercase tracking-wider">High</span>
-              </div>
-              <div className="w-1.5 h-3 bg-error -mt-0.5"></div>
-              <div className="w-2.5 h-1 rounded-full bg-primary/40 filter blur-[1px]"></div>
-              <div className="mt-1 px-2 py-0.5 rounded bg-surface-container-lowest text-on-surface shadow-md font-caption text-caption text-[11px] whitespace-nowrap flex items-center gap-1.5 border border-outline-variant/30">
-                <span className="material-symbols-outlined text-[14px] text-error">flood</span>
-                <span className="font-semibold">Lower Riverside &amp; 4th Ave</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Interactive Marker 2: INC-2051 (Moderate Amber) */}
-          <div
-            onClick={() => selectIncident('INC-2051')}
-            className="absolute left-[24%] top-[22%] -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer group"
-          >
-            <div className="flex flex-col items-center">
-              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-lowest text-on-surface shadow-md border ${
-                selectedIncidentKey === 'INC-2051' ? 'border-[#A15C07] ring-2 ring-[#A15C07]/30' : 'border-outline-variant/40'
-              } hover:bg-surface-container-low transition-all`}>
-                <span className="w-2 h-2 rounded-full bg-[#A15C07]"></span>
-                <span className="font-label-mono-sm text-label-mono-sm font-semibold">INC-2051</span>
-                <span className="font-caption text-caption text-on-surface-variant text-[10px] hidden sm:inline">
-                  Expressway Slowdown
-                </span>
-              </div>
-              <div className="w-1 h-2 bg-outline-variant"></div>
-            </div>
-          </div>
-
-          {/* Interactive Marker 3: INC-2054 (Telemetry Deviation) */}
-          <div
-            onClick={() => selectIncident('INC-2054')}
-            className="absolute left-[68%] top-[28%] -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer group"
-          >
-            <div className="flex flex-col items-center">
-              <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container-lowest text-on-surface shadow-md border ${
-                selectedIncidentKey === 'INC-2054' ? 'border-secondary ring-2 ring-secondary/30' : 'border-outline-variant/40'
-              } hover:bg-surface-container-low transition-all`}>
-                <span className="w-2 h-2 rounded-full bg-secondary"></span>
-                <span className="font-label-mono-sm text-label-mono-sm font-semibold">INC-2054</span>
-                <span className="font-caption text-caption text-[10px] text-on-secondary-container bg-secondary-fixed px-1 rounded font-medium">
-                  Telemetry Dev
-                </span>
-              </div>
-              <div className="w-1 h-2 bg-outline-variant"></div>
-            </div>
-          </div>
-
-          {/* Interactive Marker 4: INC-2057 (Civic Drain) */}
-          <div
-            onClick={() => selectIncident('INC-2057')}
-            className="absolute left-[36%] top-[72%] -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer group"
-          >
-            <div className="flex flex-col items-center">
-              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-lowest text-on-surface-variant shadow-sm border ${
-                selectedIncidentKey === 'INC-2057' ? 'border-outline ring-2 ring-outline/30' : 'border-outline-variant/40'
-              } hover:text-on-surface transition-all`}>
-                <span className="w-2 h-2 rounded-full bg-outline"></span>
-                <span className="font-label-mono-sm text-label-mono-sm">INC-2057</span>
-                <span className="font-caption text-caption text-[10px]">Civic Drain</span>
-              </div>
-              <div className="w-1 h-2 bg-outline-variant"></div>
-            </div>
-          </div>
-
-          {/* Incident Cluster Badge: Sector 2 East */}
-          <div className="absolute left-[84%] top-[34%] -translate-x-1/2 -translate-y-1/2 z-10 cursor-pointer group">
-            <div className="relative flex items-center justify-center">
-              <div className="w-10 h-10 rounded-full bg-surface-container-lowest shadow-md flex items-center justify-center border border-outline-variant/60 group-hover:scale-105 transition-transform">
-                <span className="font-label-mono text-label-mono font-bold text-on-surface">3</span>
-              </div>
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full border-2 border-surface-container-lowest"></span>
-              <div className="absolute top-11 px-1.5 py-0.5 rounded bg-surface-container-high font-label-mono-sm text-label-mono-sm text-[10px] text-on-surface-variant whitespace-nowrap shadow-sm">
-                Sector 2E Cluster
-              </div>
-            </div>
-          </div>
+          <RealisticGeoMap
+            selectedIncidentId={selectedIncidentKey}
+            onSelectIncident={selectIncident}
+            showSensors={activeTypeFilter === 'All' || activeTypeFilter === 'Sensors'}
+            showRadar={activeTypeFilter === 'All' || activeTypeFilter === 'Flooding'}
+            showTraffic={activeTypeFilter === 'All' || activeTypeFilter === 'Traffic'}
+          />
 
           {/* Floating Map Legend & Telemetry Card (Layer 2) */}
           <div className="absolute left-space-md bottom-space-md z-20 bg-surface-container-lowest p-space-md rounded-xl shadow-lg border border-outline-variant/30 max-w-xs hidden sm:flex flex-col gap-space-sm backdrop-blur-md bg-opacity-95">

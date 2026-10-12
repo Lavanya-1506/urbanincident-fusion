@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { IncidentRelationshipGraph } from './IncidentRelationshipGraph';
 import { INITIAL_INCIDENTS } from '../../services/mockData';
+import { useReportStore } from '../../store/reportStore';
+import { ReportConfig } from '../../types/reports';
 
 export const InvestigationWorkspacePage: React.FC = () => {
   const { id = 'INC-2048' } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { openReportModal, generateReport, downloadReport } = useReportStore();
 
   const [activeTab, setActiveTab] = useState<'summary' | 'evidence' | 'hypotheses' | 'timeline' | 'relationships' | 'audit'>('summary');
   const [operatorActionState, setOperatorActionState] = useState<string | null>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState<boolean>(false);
   const [notes, setNotes] = useState('Reviewed Doppler radar band; correlation with Gauge W-18 surge confirms localized retention basin threshold breach. Pending drone visual pass.');
   const [checklist, setChecklist] = useState([
     { id: 1, text: 'Cross-reference Doppler cell intensity', sub: 'Confirmed 38mm/h by analyst at 10:20', done: true },
@@ -18,6 +22,50 @@ export const InvestigationWorkspacePage: React.FC = () => {
   ]);
 
   const incident = INITIAL_INCIDENTS.find(i => i.id === id) || INITIAL_INCIDENTS[0];
+
+  const handleInstantDownloadPdf = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      const config: ReportConfig = {
+        reportType: 'root_cause_analysis',
+        incidentId: incident.id,
+        reportReference: `REP-${incident.id.replace(/[^A-Za-z0-9]/g, '-')}-RCA`,
+        organizationName: 'Metropolitan Civil Protection & Urban Infrastructure Authority',
+        departmentName: 'Bureau of Emergency Cartography & Causal Incident Fusion',
+        audience: 'operations_command',
+        reportingPeriod: 'Operational Real-time Window',
+        confidentialityMarking: 'CONFIDENTIAL // MUNICIPAL EMERGENCY RESPONSE',
+        selectedSections: [
+          'cover_page',
+          'executive_summary',
+          'incident_overview',
+          'incident_metrics',
+          'incident_timeline',
+          'evidence_register',
+          'root_cause_analysis',
+          'evidence_breakdown',
+          'alternative_explanations',
+          'geospatial_analysis',
+          'response_history',
+          'recommendations',
+          'uncertainty_limitations',
+          'appendices',
+        ],
+        format: 'pdf',
+      };
+      const rep = await generateReport(config);
+      if (rep) {
+        downloadReport(rep, 'pdf');
+        setOperatorActionState(`✓ PDF Report downloaded successfully: UIF-Report-${incident.id}-v${rep.version}.pdf`);
+      }
+    } catch (err: any) {
+      console.error('Instant PDF download error:', err);
+      setOperatorActionState('PDF generation encountered an issue. Opening configuration dialog...');
+      openReportModal(incident.id, 'root_cause_analysis');
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
 
   const toggleChecklist = (checkId: number) => {
     setChecklist(prev => prev.map(item => item.id === checkId ? { ...item, done: !item.done } : item));
@@ -78,6 +126,29 @@ export const InvestigationWorkspacePage: React.FC = () => {
 
             {/* Action Bar */}
             <div className="flex items-center flex-wrap gap-space-sm shrink-0">
+              <div className="flex items-center rounded bg-surface-container-high border border-outline-variant overflow-hidden shadow-xs">
+                <button
+                  type="button"
+                  onClick={handleInstantDownloadPdf}
+                  disabled={isDownloadingPdf}
+                  className="h-9 px-3.5 bg-primary text-on-primary hover:bg-primary/90 font-title-sm text-title-sm flex items-center gap-1.5 transition-colors font-bold disabled:opacity-50"
+                  title="Directly download official incident report in PDF format"
+                >
+                  <span className={`material-symbols-outlined text-[18px] ${isDownloadingPdf ? 'animate-spin' : ''}`}>
+                    {isDownloadingPdf ? 'sync' : 'picture_as_pdf'}
+                  </span>
+                  <span>{isDownloadingPdf ? 'Generating PDF...' : 'Download PDF Report'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openReportModal(incident.id, 'root_cause_analysis')}
+                  className="h-9 px-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-semibold flex items-center gap-1 transition-colors border-l border-outline-variant"
+                  title="Customize report sections, audience, and metadata options"
+                >
+                  <span className="material-symbols-outlined text-[16px]">tune</span>
+                  <span className="hidden sm:inline">Configure</span>
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={() => setOperatorActionState('Incident Confirmed and Dispatched')}

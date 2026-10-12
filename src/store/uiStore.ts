@@ -71,7 +71,7 @@ export const useUiStore = create<UiState>((set) => ({
   isSearchOpen: false,
   isDetailDrawerOpen: false,
   isNotificationsOpen: false,
-  mapMode: '3d',
+  mapMode: '2d',
   currentRole: 'operations_analyst',
   layers: {
     weatherRadar: true,

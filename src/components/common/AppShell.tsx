@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useUiStore } from '../../store/uiStore';
 import { SearchModal } from './SearchModal';
 import { NotificationsDrawer } from './NotificationsDrawer';
+import { ReportGenerationModal } from '../../features/reports/ReportGenerationModal';
 
 export const AppShell: React.FC = () => {
   const [isRailCollapsed, setIsRailCollapsed] = useState(false);
@@ -22,6 +23,7 @@ export const AppShell: React.FC = () => {
     if (path.includes('/map')) return 'Live Operational Map';
     if (path.includes('/incidents/')) return 'Incident Investigation';
     if (path.includes('/incidents')) return 'Incident Explorer';
+    if (path.includes('/reports')) return 'Report History & Causal Dossiers';
     if (path.includes('/replay')) return 'Replay Lab - Comparison Workspace';
     if (path.includes('/analytics')) return 'Operational Analytics';
     if (path.includes('/sources')) return 'Data Sources & Telemetry';
@@ -32,9 +34,10 @@ export const AppShell: React.FC = () => {
 
   return (
     <div className="bg-background font-body-md text-on-surface min-h-screen flex flex-col">
-      {/* Search Modal and Notifications Drawer */}
+      {/* Search Modal, Notifications Drawer, and Report Modal */}
       <SearchModal />
       <NotificationsDrawer />
+      <ReportGenerationModal />
 
       {/* Left Navigation Rail (Stitch exact layout) */}
       <aside 
@@ -140,6 +143,21 @@ export const AppShell: React.FC = () => {
             >
               <span className="material-symbols-outlined text-[18px]">insights</span>
               {!isRailCollapsed && <span>Analytics</span>}
+            </NavLink>
+
+            <NavLink
+              to="/reports"
+              className={({ isActive }) =>
+                `flex items-center gap-space-sm px-space-sm py-2 rounded transition-colors font-body-sm text-body-sm ${
+                  isActive
+                    ? 'bg-surface-container-high text-on-surface font-semibold'
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                }`
+              }
+              title={isRailCollapsed ? 'Reports & Dossiers' : undefined}
+            >
+              <span className="material-symbols-outlined text-[18px]">description</span>
+              {!isRailCollapsed && <span>Reports</span>}
             </NavLink>
           </nav>
 
