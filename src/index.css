@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-surface: #f8faf4;
+    --bg-card: #ffffff;
+    --border-subtle: #c4c7c2;
+    --text-primary: #191c19;
+    --text-muted: #444844;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #f8faf4;
+    color: #191c19;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "tnum" 1, "cv05" 1, "cv08" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Material Symbols icon helper */
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    vertical-align: middle;
+  }
+
+  /* Stitch subtle refined scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f2f4ee;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #c4c7c2;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #747874;
+  }
+}
+
+/* React Flow styling tailored for Stitch */
+.react-flow__node {
+  border-radius: 8px;
+  font-family: inherit;
+  background: #ffffff !important;
+  border: 1px solid #c4c7c2 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.react-flow__edge-path {
+  stroke: #747874 !important;
+  stroke-width: 1.5 !important;
+}
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke: #2a6194 !important;
+}
+.react-flow__controls {
+  background: #ffffff !important;
+  border: 1px solid #c4c7c2 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+.react-flow__controls button {
+  background: #ffffff !important;
+  border-bottom: 1px solid #c4c7c2 !important;
+  fill: #444844 !important;
+}
+.react-flow__controls button:hover {
+  background: #f2f4ee !important;
+  fill: #191c19 !important;
+}
